@@ -1,0 +1,37 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    {% for watchlist_item in watchlist %}
+        <div class="card mb-4" style="max-width: 1000px;">
+            <div class="row no-gutters">
+                <div class="col-sm-5" style="background: #868e96;">
+                    {% if watchlist_item.item.image_link %}
+                        <img src="{{ watchlist_item.item.image_link}}" class="card-img-top" alt="Item Image"
+                            style="height: 330px !important"
+                        >
+                    {% endif %}
+                </div>
+                <div class="col-sm-7">
+                    <div class="card-body">
+                        <h5 class="card-title"><strong>{{ watchlist_item.item.name }}</strong></h5>
+                        <p class="card-text"><strong>Price: ${{ watchlist_item.item.price }}</strong>
+                            <br>
+                            Description: {{ watchlist_item.item.description }}
+                            <br>
+                            Category: {{ watchlist_item.item.category }}
+                            <br>
+                            Created on {{ watchlist_item.item.date }}
+                        </p>
+                        <a href="{% url 'item_page' watchlist_item.item.id %}" class="btn btn-primary">Goto Item Page</a>
+                      </div>
+                      <form action="{% url 'delete_from_watchlist' %}" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="item_id" value="{{ watchlist_item.item.id }}">
+                        <button type="submit" class="btn btn-danger ml-4 mb-2">Delete</button>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+    <h2>Your Watchlist is empty.</h2>
+    {% endfor %}
+{% endblock %}

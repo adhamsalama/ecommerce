@@ -1,0 +1,31 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    {% for item in items %}
+            <div class="card mb-4" style="max-width: 1000px;">
+                <div class="row no-gutters">
+                    <div class="col-sm-5" style="background: #868e96;">
+                        {% if item.image_link %}
+                            <img src="{{ item.image_link}}" class="card-img-top" alt="Item Image"
+                                style="height: 330px !important"
+                            >
+                        {% endif %}
+                    </div>
+                    <div class="col-sm-7">
+                        <div class="card-body">
+                            <h5 class="card-title"><strong>{{ item.name }}</strong></h5>
+                            <p class="card-text"><strong>Price: ${{ item.price }}</strong>
+                                <br>
+                                {{ item.description }}
+                                <br>
+                                Category: {{ item.category }}
+                                <br>
+                                Created on {{ item.date }}
+                            </p>
+                            <a href="{% url 'item_page' item.id %}" class="btn btn-primary">Goto Item Page</a>
+                          </div>
+                    </div>
+                </div>
+            </div>
+    {% endfor %}
+{% endblock %}

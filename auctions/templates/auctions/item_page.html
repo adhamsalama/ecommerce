@@ -1,0 +1,116 @@
+{% extends "auctions/layout.html" %}
+{% load crispy_forms_tags %}
+
+{% block body %}
+    <div style="display: flex">
+    {% if item.open == True %}
+        <h3><span class="badge badge-primary">Open</span></h3>
+    {% else %}
+        <h3><span class="badge badge-secondary">Closed</span></h3>
+    {% endif %}
+    {% if user.is_authenticated %}
+        <form action="{% url 'add_to_watchlist'%}" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="item_id" value="{{ item.id }}">
+            <button type="submit" class="btn btn-primary ml-2">Add to Watchlist</button>
+        </form>
+    {% endif %}
+    </div>
+    <div class="card mb-4" style="max-width: 1000px;">
+        <div class="row no-gutters">
+                <div class="col-sm-5" style="background: #868e96;">
+                    {% if item.image_link %}
+                        <img src="{{ item.image_link}}" class="card-img-top" alt="Item Image"
+                            style="height: 330px !important"
+                        >
+                {% endif %}
+            </div>
+            <div class="col-sm-7">
+                <div class="card-body">
+                    <h5 class="card-title"><strong>{{ item.name }}</strong></h5>
+                    <p class="card-text"><strong>Price: ${{ item.price }}</strong>
+                        <br>
+                        {% if bids %}
+                            <strong>Highest Bid: ${{ bids.0.value }}</strong>
+                        {% else %}
+                            No bids yet.
+                        {% endif %}
+                        <br>
+                        Description: {{ item.description }}
+                        <br>
+                        Category: {{ item.category }}
+                        <br>
+                        Created on {{ item.date }} by {{ item.owner }}
+                    </p>
+                    {{ bids|length }} bid(s).
+                    {% if item.open == True and item.owner != user %}
+                    <form action="{% url 'bid' %}" method="POST">
+                        {% csrf_token %}
+                        <input type="number" name="bid_value" required>
+                        <input type="hidden" name="item_id" value="{{ item.id }}" required>
+                        <button type="submit" class="btn btn-primary">Bid</button>
+                    {% endif %}
+                    </form>
+                    {% if user == item.owner and item.open == True %}
+                        <form action="{% url 'close_auction' %}" method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="item_id" value="{{ item.id }}">
+                            <button type="submit" class="btn btn-danger">Close Auction</button>
+                        </form>
+                    {% endif %}
+                  </div>
+            </div>
+        </div>
+    </div>
+    {% if item.open == False %}
+        {% if bids and bids.0.user == user %}
+            <div class="alert alert-success" role="alert">
+                Congratulations! You won this auction!
+            </div>
+        {% elif bids %}
+            <div class="alert alert-primary" role="alert">
+                This auction was won by {{ bids.0.user }}.
+            </div>
+        {% else %}
+            <div class="alert alert-primary" role="alert">
+                This auction was won by no one.
+            </div>
+        {% endif %}
+    {% endif %}
+    {% if user == item.owner %}
+        <h4> {{ bids|length }} Bid(s)</h4>
+        {% for bid in bids %}
+            <div class="alert alert-primary" role="alert">
+                ${{ bid.value }} by {{ bid.user }} on {{ bid.date }}
+            </div>
+        {% empty %}
+            No bids yet.
+        {% endfor %}
+    {% elif user_bids|length > 0 %}
+        <h3>You have made {{ user_bids|length }} bid(s).</h3>
+        {% for bid in user_bids %}
+            <div class="alert alert-primary" role="alert">
+                {{ bid.value }} on {{ bid.date }}
+            </div>
+        {% endfor %}
+    {% endif %}
+    <h4>Comments</h4>
+    <form action="{% url 'comment' %}" method="POST">
+        {% csrf_token %}
+            <div class="form-group">
+              <label for="comment">Make a comment.</label>
+              <textarea class="form-control" name="text" id="comment" rows="3"></textarea>
+              <input type="hidden" name="item_id" value="{{ item.id }}">
+            </div>
+        <button type="submit" class="btn btn-primary mb-2">Comment</button>
+    </form>
+    {% for comment in comments %}
+        <div class="alert alert-secondary mb-2" role="alert">
+            {{ comment.text }}
+            <br>
+            {{ comment.user }} - {{ comment.date }}
+        </div>
+    {% empty %}
+        No comments yet.
+    {% endfor %}
+{% endblock %}
